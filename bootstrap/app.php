@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\BlockedIPChecker;
+use App\Http\Middleware\isAuthenticated;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,7 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'checkRole' => \App\Http\Middleware\checkRole::class,
+            'checkrole' => \App\Http\Middleware\CheckRole::class,
+            'blockip' => \App\Http\Middleware\BlockedIPChecker::class,
+            'RateLimitChecker' => \App\Http\Middleware\ThrottleMiddleware::class,
+            'auths' => \App\Http\Middleware\isAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
