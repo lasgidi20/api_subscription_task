@@ -2,33 +2,27 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use App\Rules\StrongPasswordRule;
+use App\Rules\ValidFormEntry;
+use App\Http\Requests\RegisterRequest;
 use Validator;
 use App\Http\Controllers\Api\BaseController as BaseController;
 
 class RegisterController extends BaseController
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $requests)
     {
-        $validator = Validator::make($request->all(),[
-          'firstname' => 'required',
-          'lastname' => 'required',
-          'email' => 'required',
-          'role' => 'required',
-          'password' => 'required',
-          'confirm_password' => 'required|same:password',
-        ]);
-
-        if($validator->fails()){
-            return $this->sendError('Validation Error.', $validator->errors());
-        }
-
-        $input = $request->all();
-        $input['password'] = bcrypt($input['password']);
-        $user = User::create($input);
+        $user = new User;
+        $user->firstname = $requests->input('firstname');
+        $user->lastname = $requests->input('lastname');
+        $user->email = $requests->input('email');
+        $user->role =  $requests->input('role');
+        $user->password = bcrypt($requests->input('password'));
+        $confirm_password = $user->password;
+        $user->save();
+        
         $success['token'] =  $user->createToken('MyApp')->plainTextToken;
         $success['firstname'] =  $user->firstname;
         $success['lastname'] =  $user->lastname;
