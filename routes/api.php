@@ -9,13 +9,13 @@ use App\Http\Controllers\API\PostController;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\BlockedIPChecker;
 
-Route::post('/register', [RegisterController::class, 'register']);
+Route::post('/register', [RegisterController::class, 'register'])->middleware('blockip');
 
-Route::controller(AuthenticateController::class)->group(function(){
-    Route::post('login', 'login');
-    Route::get('logout', 'logout');
+Route::middleware(['blockip'])->group(function(){
+    Route::post('login', [AuthenticateController::class,'login']);
+    Route::get('logout', [AuthenticateController::class,'logout']);
 });
 
-Route::resource('subscriptions', SubscriptionController::class)->middleware(BlockedIPChecker::class);
-Route::resource('posts', PostController::class);
+Route::resource('subscriptions', SubscriptionController::class)->middleware(BlockedIPChecker::class, 'auth:sanctum', ThrottleMiddleware::class);
+Route::resource('posts', PostController::class)->middleware('auth:sanctum', ThrottleMiddleware::class);
 
