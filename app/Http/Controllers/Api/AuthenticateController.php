@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use App\Rules\ValidFormEntry;
-use Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Api\BaseController as BaseController;
 use App\Http\Requests\LoginRequest;
@@ -13,20 +11,12 @@ use Illuminate\Http\Request;
 
 class AuthenticateController extends BaseController
 {
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $validator = Validator::make($request->all(),[
-            'email' => 'required',
-            'password' => 'required',
-        ]);
+        $validated = $request->validated();
         
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error.', $validator->errors());
-        }
-      
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) { 
+        if (Auth::attempt($validated)) { 
             $user = Auth::user();
-       
             $success['token'] =  $user->createToken('MyApp')->plainTextToken; 
             $success['firstname'] =  $user->firstname;
             $success['lastname'] =  $user->lastname;
@@ -45,4 +35,3 @@ class AuthenticateController extends BaseController
         return response()->json(['message' => 'Logged Out'], 200);
     }
 }
-
