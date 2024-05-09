@@ -12,18 +12,14 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
         return Subscription::all();
     }
 
-    public function getSubscriptionById(Subscription $subscription) 
+    public function getSubscriptionById($subscriptionId)
     {
-        return $subscription;
-      //  public function getSubscriptionById(Subscription $subscription) 
-      //  return Subscription::findorfail($subscriptionId)
+        return Subscription::find($subscriptionId);
     }
 
-    public function deleteSubscription(Subscription $subscription) 
+    public function deleteSubscription($subscriptionId) 
     {
-        $subscription->delete();
-         //  public function deleteById($subscriptionid) 
-      //  Subscription::destroy($subscriptionId)
+        Subscription::destroy($subscriptionId);
     }
 
     public function createSubscription(array $attributes) 
@@ -31,9 +27,9 @@ class SubscriptionRepository implements SubscriptionRepositoryInterface
         return Subscription::create($attributes);
     }
 
-    public function updateSubscription(Subscription $subscription, array $attributes) 
+    public function updateSubscription($subscriptionId, $new_attributes) 
     {
-        return $subscription->update($attributes);
-        // return Subscription::whereId($subscriptionId)->update($newDetails);
+        return Subscription::whereId($subscriptionId)->update($new_attributes);
     }
 }
+

@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Contract\PostRepositoryInterface;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Post;
+use App\Models\User;
+use App\Models\Subscription;
 
 class PostRepository implements PostRepositoryInterface 
 {
@@ -15,10 +17,6 @@ class PostRepository implements PostRepositoryInterface
 
     public function createPost(array $attributes) 
     {
-        // if (! Gate::allows('isTeacher')) {
-         //   abort(403);
-        // }
-
         return Post::create($attributes);
     }
 }
