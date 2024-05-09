@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Models\Subscription;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use App\Contract\MessageRepositoryInterface;
 
 class UserSubscription extends Notification
 {
@@ -15,9 +16,9 @@ class UserSubscription extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(Subscription $subsciption)
+    public function __construct($messages)
     {
-        $this->subscription = $subsciption;
+        $this->messages = $messages;
     }
 
     /**
@@ -36,8 +37,8 @@ class UserSubscription extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
+                    ->line($this->messages['hi'])
+                    ->line($this->messages['wish'])
                     ->line('Thank you for using our application!');
     }
 
