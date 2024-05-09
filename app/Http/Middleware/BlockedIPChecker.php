@@ -10,7 +10,7 @@ class BlockedIPChecker
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $restrictedIps = ['102.129.158.0'];
+        $restrictedIps = ['127.0.0.1','102.129.158.0'];
         if(in_array($request->ip(), $restrictedIps)){
             App:abort(403, 'Request forbidden');
         } else {
