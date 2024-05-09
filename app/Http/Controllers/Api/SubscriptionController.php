@@ -5,69 +5,62 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Contract\SubscriptionRepositoryInterface;
-use App\Contract\MessageRepositoryInterface;
-use Illuminate\Http\JsonResponse;
 use App\Models\User;
 use App\Models\Subscription;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\UserSubscription;
-use App\Http\Middleware\CheckRole;
+use Illuminate\Support\Facades\Notification;
 use App\Http\Requests\SubscriptionRequest;
-use App\Http\Middleware\isAuthenticated;
-use Validator;
+
 use App\Http\Controllers\Api\BaseController as BaseController;
 
 class SubscriptionController extends BaseController
 {
     public function __construct(
-        private SubscriptionRepositoryInterface $repository, 
-        private MessageRepositoryInterface $message
+        private SubscriptionRepositoryInterface $repository,
     ) { 
     }
     
     public function index()
     {
         $data = $this->repository->getAllSubscriptions();
+        
         return $this->sendResponse($data, 'fetched Successfully');
     }
 
-    public function store(Request $request)
+    public function store(SubscriptionRequest $request)
     {
-        $validator = Validator::make(
-        $request->all(),
-        ['confirm' => 'required']);
-
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error.', $validator->errors());
-        }
-
         $attributes = [
             'confirm'=> $request->confirm,
-            'user_id'=> $request->user_id
+            'user_id'=> $request->user_id,
+            'role'=> $request->role
         ];
-        
         $subscription =  $this->repository->createSubscription($attributes);
+        $user = User::find($subscription->user_id);
         $success['confirm'] =  $subscription->confirm;
         $success['user_id'] =  $subscription->user_id;
-        $user = Auth::user();
-        $subscription_message = $this->message->subscriptionMessage();
-        $user->notify(new UserSubscription($subscription_message));
-        
-        return $this->sendResponse($success, 'Subscription Successfully Created'); 
+        $messages["hi"] = "Hey, Thank You {$user->firstname}";
+        $messages["wish"] = "For subscribing on our platform as a {$user->role}, be sure to receive latest contents as a {$user->role}";
+        $user->notify(new UserSubscription($messages));
+        return $this->sendResponse($subscription, 'Subscription Successfully Created'); 
     }
 
     public function show(Subscription $subscription)
     {
-       $subscription = $this->repository->getSubscriptionById($subscription);
+        $subscription_item = $this->repository->getSubscriptionById($subscription);
 
-       return $this->sendResponse($success, 'Subscription Found');
+        return $this->sendResponse($subscription_item, 'Subscription Found');
     }
 
-    public function update(Subscription $subscription, Request $request)
+    public function update(Subscription $subscription, SubscriptionRequest $request)
     {
-        $this->repository->updateSubscription($subscription, $attributes);
+        $subscription_details = $request->only([
+            'confirm',
+            'role'
+        ]);
+        $this->repository->updateSubscription($subscription, $subscription_details);
 
-        return $this->sendResponse($success, 'Successfully Updated');
+        return $this->sendResponse($subscription, 'Successfully Updated');
     }
 
     public function destroy(Subscription $subscription)
